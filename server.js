@@ -50,15 +50,21 @@ app.ws('/client', function(ws, req) {
 });
 
 app.ws('/server', function(ws, req) {
+  let conId;
   ws.on('message', function(msg) {
     const message = JSON.parse(msg);
     if (message.type === 'init') {
+      conId = message.id;
       route[message.id] = { ...route[message.id], server: ws };
       send(ws, { type: 'ready' });
     } else if (route[message.id] && route[message.id].client) {
       send(route[message.id].client, message);
     }
   });
+  
+  ws.on('close', () => {
+    route[conId].server = null;
+  })
 });
  
 app.listen(8585);

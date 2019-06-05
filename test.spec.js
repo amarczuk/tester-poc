@@ -11,7 +11,8 @@ describe('test', () => {
     done();
   });
   
-  test('test 1', () => {
-    expect(1).toBe(1);
+  test('test 1', async () => {
+    const res = await tester.exec('document.querySelector("#test1").innerHTML')
+    expect(res).toBe('abc');
   })
 })

@@ -41,13 +41,14 @@ module.exports.start = async () => {
         resolve(true);
         return;
       }
-      testEmitter.emit(eventName(data), data);
+      console.log(eventName(msg));
+      testEmitter.emit(eventName(msg), msg);
     });
   });
 };
 
 module.exports.exec = async (code) => {
-  const time = new Date.valueOf();
+  const time = new Date().valueOf();
   const name = eventName({ code, time });
   send(ws, { 
     type: 'code', 
@@ -57,6 +58,7 @@ module.exports.exec = async (code) => {
   });
   
   const result = await new Promise((resolve) => {
+    console.log(name);
     testEmitter.on(name, (data) => {
       if (data.type === 'done') {
         testEmitter.removeAllListeners(name);

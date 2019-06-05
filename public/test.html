@@ -4,7 +4,7 @@
 
 <script>
   (function() {
-    const ws = new WebSocket(`ws://localhost:8585/client`);
+    const ws = new WebSocket('ws://localhost:8585/client');
     let id = sessionStorage.testId;
     
     ws.onmessage = function(event) {
@@ -23,7 +23,9 @@
       }
     };
     
-    ws.onopen = () => ws.send(JSON.stringify({type: 'init', id: id}));
+    ws.onopen = function() {
+      ws.send(JSON.stringify({type: 'init', id: id}));
+    };
   })();
 </script>
 

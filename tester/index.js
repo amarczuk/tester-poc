@@ -11,9 +11,12 @@ const eventName = data => `msg_${data.code}_${data.time}`;
 const send = (ws, msg) => ws.send(JSON.stringify(msg));
 
 let connected = false;
+let connectionCount = 0;
 
 module.exports.stop = async () => {
   if (!connected) return;
+  connectionCount--;
+  if (connectionCount) return;
   return new Promise(resolve => {
     ws.on('close', () => {
       testEmitter.removeAllListeners();
@@ -21,20 +24,21 @@ module.exports.stop = async () => {
       connected = false;
       resolve();
     });
-    
+
     ws.close();
   });
 };
 
 module.exports.start = async () => {
+  connectionCount++;
   if (connected) return true;
   return new Promise((resolve) => {
     ws.on('open', function open() {
       send(ws, { type: 'init', id: process.env['TEST_ID'] });
     });
-     
+
     ws.on('message', function incoming(data) {
-      console.log(data);
+      // console.log(data);
       const msg = JSON.parse(data);
       if (msg.type === 'ready') {
         connected = true;
@@ -50,23 +54,24 @@ module.exports.start = async () => {
 module.exports.exec = async (code) => {
   const time = new Date().valueOf();
   const name = eventName({ code, time });
-  send(ws, { 
-    type: 'code', 
+  send(ws, {
+    type: 'code',
     id: process.env['TEST_ID'],
     code,
     time
   });
-  
+
   const result = await new Promise((resolve) => {
-    console.log(name);
     testEmitter.on(name, (data) => {
+      // console.log(data);
       if (data.type === 'done') {
+        // console.log(name, data.result);
         testEmitter.removeAllListeners(name);
         resolve(data.result);
       }
     });
   });
-  
-  console.log(result);
+
+  // console.log(result);
   return result;
 }

@@ -1,28 +1,29 @@
 <html>
 
 <div id="test1">abc</div>
+<div id="test2">abc 2</div>
 
 <script>
   (function() {
-    const ws = new WebSocket('ws://localhost:8585/client');
+    const ws = new WebSocket('ws://' + window.location.host + '/client');
     let id = sessionStorage.testId;
-    
+
     ws.onmessage = function(event) {
       const data = JSON.parse(event.data);
       console.log(data);
-      
+
       if (data.type === 'id') {
         id = data.id;
         sessionStorage.testId = id;
       }
-      
+
       if (data.type === 'code') {
         ws.send(JSON.stringify({ type: 'started', id: id, code: data.code, time: data.time }));
         const result = Function('"use strict";return ' + data.code + '')();
         ws.send(JSON.stringify({ type: 'done', id: id, code: data.code, time: data.time, result: result }));
       }
     };
-    
+
     ws.onopen = function() {
       ws.send(JSON.stringify({type: 'init', id: id}));
     };

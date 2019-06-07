@@ -4,16 +4,16 @@ const express = require('express');
 const app = express();
 const expressWs = require('express-ws')(app);
 const uuidv1 = require('uuid/v1');
- 
+
 app.use(express.static(path.join(__dirname, '/public')));
- 
+
 app.get('/', function(req, res, next){
   console.log('get route', req.testing);
   res.end();
 });
- 
+
 const route = {};
- 
+
 const initServer = (id) => {
   const ls = spawn('npm', ['run', 'test'], { env: { ...process.env, TEST_ID: id }, shell: true });
 
@@ -27,11 +27,14 @@ const initServer = (id) => {
 
   ls.on('close', (code) => {
     console.log(`tests finished with code ${code}`);
+    if (route[id].server && route[id].server.terminate) {
+      route[id].server.terminate();
+    }
   });
 };
 
 const send = (ws, msg) => ws.send(JSON.stringify(msg));
- 
+
 app.ws('/client', function(ws, req) {
   ws.on('message', function(msg) {
     console.log(msg);
@@ -61,10 +64,10 @@ app.ws('/server', function(ws, req) {
       send(route[message.id].client, message);
     }
   });
-  
+
   ws.on('close', () => {
     route[conId].server = null;
   })
 });
- 
+
 app.listen(8585);

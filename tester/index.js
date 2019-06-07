@@ -29,7 +29,20 @@ module.exports.stop = async () => {
   });
 };
 
+module.exports.started = async () => {
+  if (connected) return true;
+  await new Promise((resolve) => {
+    setTimeout(async () => {
+      if (connected) return resolve();
+      await module.exports.started();
+      return resolve();
+    }, 100);
+  });
+  return true;
+}
+
 module.exports.start = async () => {
+  console.error('connecting...', connected);
   connectionCount++;
   if (connected) return true;
   return new Promise((resolve) => {
@@ -41,11 +54,12 @@ module.exports.start = async () => {
       // console.log(data);
       const msg = JSON.parse(data);
       if (msg.type === 'ready') {
+        console.error('connected', connected);
         connected = true;
         resolve(true);
         return;
       }
-      console.log(eventName(msg));
+      console.error(eventName(msg));
       testEmitter.emit(eventName(msg), msg);
     });
   });

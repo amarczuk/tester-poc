@@ -18,7 +18,7 @@ const initServer = (id) => {
   const ls = spawn('npm', ['run', 'test'], { env: { ...process.env, TEST_ID: id }, shell: true });
 
   ls.stdout.on('data', (data) => {
-    process.stdout.write(data);
+  //  process.stdout.write(data);
   });
 
   ls.stderr.on('data', (data) => {

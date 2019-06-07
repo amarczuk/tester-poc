@@ -5,11 +5,11 @@ describe('test v2', () => {
       await tester.start();
       done();
   });
-
-  afterAll(async (done) => {
-    //await tester.stop();
-    done();
-  });
+  // 
+  // afterAll(async (done) => {
+  //   await tester.stop();
+  //   done();
+  // });
 
   test('test 3', async () => {
     const res = await tester.exec('document.querySelectorAll("#test2").length')

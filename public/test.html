@@ -18,9 +18,34 @@
       }
 
       if (data.type === 'code') {
-        ws.send(JSON.stringify({ type: 'started', id: id, code: data.code, time: data.time }));
-        const result = Function('"use strict";return ' + data.code + '')();
-        ws.send(JSON.stringify({ type: 'done', id: id, code: data.code, time: data.time, result: result }));
+        ws.send(JSON.stringify({
+          type: 'started',
+          id: id,
+          code: data.code,
+          time: data.time,
+          tid: data.tid
+        }));
+        
+        try {
+          const result = Function('"use strict";return ' + data.code + '')();
+          ws.send(JSON.stringify({
+            type: 'done',
+            id: id,
+            code: data.code,
+            time: data.time,
+            tid: data.tid,
+            result: result }));
+        } catch (e) {
+          ws.send(JSON.stringify({
+            type: 'error',
+            id: id,
+            code: data.code,
+            time: data.time,
+            tid: data.tid,
+            result: e.message,
+            browser: window.navigator.userAgent
+          }));
+        }
       }
     };
 

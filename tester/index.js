@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const uuidv1 = require('uuid/v1');
 const EventEmitter = require('events');
+// const commands = require('./commands');
 
 class TestEmitter extends EventEmitter {}
 const testEmitter = new TestEmitter();
@@ -12,6 +13,7 @@ const send = (ws, msg) => ws.send(JSON.stringify(msg));
 
 let connected = false;
 let connectionCount = 0;
+let tid = uuidv1();
 
 module.exports.stop = async () => {
   if (!connected) return;
@@ -42,50 +44,68 @@ module.exports.started = async () => {
 }
 
 module.exports.start = async () => {
-  console.error('connecting...', connected);
   connectionCount++;
   if (connected) return true;
   return new Promise((resolve) => {
     ws.on('open', function open() {
-      send(ws, { type: 'init', id: process.env['TEST_ID'] });
+      send(ws, { type: 'init', id: process.env['TEST_ID'], tid });
     });
 
     ws.on('message', function incoming(data) {
-      // console.log(data);
       const msg = JSON.parse(data);
       if (msg.type === 'ready') {
-        console.error('connected', connected);
         connected = true;
         resolve(true);
         return;
       }
-      console.error(eventName(msg));
       testEmitter.emit(eventName(msg), msg);
     });
   });
 };
 
-module.exports.exec = async (code) => {
+const exec = async (toExec, params = null) => {
+  const values = params ? params.map(p => JSON.stringify(p)) : [];
+  const code = typeof toExec === 'function'
+    ? '(' + toExec.toString() + `)(${values.join(', ')})`
+    : toExec;
   const time = new Date().valueOf();
   const name = eventName({ code, time });
   send(ws, {
     type: 'code',
     id: process.env['TEST_ID'],
     code,
-    time
+    time,
+    tid
   });
 
-  const result = await new Promise((resolve) => {
+  const result = await new Promise((resolve, reject) => {
     testEmitter.on(name, (data) => {
-      // console.log(data);
       if (data.type === 'done') {
-        // console.log(name, data.result);
         testEmitter.removeAllListeners(name);
         resolve(data.result);
+      }
+
+      if (data.type === 'error') {
+        testEmitter.removeAllListeners(name);
+        reject(new Error(`Error: ${data.result} in ${data.code} browser: ${data.browser}`));
       }
     });
   });
 
-  // console.log(result);
   return result;
 }
+
+const exists = async (selector) => {
+  let result;
+  do {
+    result = await exec(function(selector) {
+      return document.querySelectorAll(selector).length > 0;
+    }, [selector]);
+  } while (!result);
+
+  return true;
+}
+
+module.exports.exec = exec;
+module.exports.exists = exists;
+// module.export.cmd = commands(exec);

@@ -5,14 +5,19 @@ describe('test v2', () => {
       await tester.start();
       done();
   });
-  // 
-  // afterAll(async (done) => {
-  //   await tester.stop();
-  //   done();
-  // });
+
+  afterAll(async (done) => {
+    await tester.stop();
+    done();
+  });
 
   test('test 3', async () => {
-    const res = await tester.exec('document.querySelectorAll("#test2").length')
+    const res = await tester.exec(() => document.querySelectorAll("#test2").length)
     expect(res).toEqual(1);
+  })
+
+  test('test 4', async () => {
+    const res = await tester.exists("#test2");
+    expect(res).toEqual(true);
   })
 })

@@ -18,7 +18,7 @@ const initServer = (id) => {
   const ls = spawn('npm', ['run', 'test'], { env: { ...process.env, TEST_ID: id }, shell: true });
 
   ls.stdout.on('data', (data) => {
-  //  process.stdout.write(data);
+   process.stdout.write(data);
   });
 
   ls.stderr.on('data', (data) => {
@@ -47,18 +47,26 @@ app.ws('/client', function(ws, req) {
         initServer(message.id);
       }
     } else if (route[message.id] && route[message.id].server) {
-      send(route[message.id].server, message);
+      send(route[message.id].server[message.tid], message);
     }
   });
 });
 
-app.ws('/server', function(ws, req) {
+app.ws('/server', function(ws) {
   let conId;
+  let testId;
   ws.on('message', function(msg) {
     const message = JSON.parse(msg);
     if (message.type === 'init') {
       conId = message.id;
-      route[message.id] = { ...route[message.id], server: ws };
+      testId = message.tid;
+      route[message.id] = {
+        ...route[message.id],
+        server: {
+          ...route[message.id].server,
+          [testId]: ws
+        }
+      };
       send(ws, { type: 'ready' });
     } else if (route[message.id] && route[message.id].client) {
       send(route[message.id].client, message);
@@ -66,8 +74,13 @@ app.ws('/server', function(ws, req) {
   });
 
   ws.on('close', () => {
-    route[conId].server = null;
-  })
+    const { [testId]: removed, ...rest } = route[conId].server;
+    if (Object.values(rest).length) {
+      route[conId].server = { ...rest };
+    } else {
+      route[conId].server = null;
+    };
+  });
 });
 
 app.listen(8585);

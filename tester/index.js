@@ -112,7 +112,52 @@ const exists = async (selector) => {
   return true;
 }
 
+const doesnotexist = async (selector) => {
+  let result;
+  do {
+    result = await exec(function(selector) {
+      return !document.querySelectorAll(selector).length;
+    }, selector);
+    if (!result) await wait(200);
+  } while (!result);
+
+  return true;
+}
+
+const methodProxy = {
+  async apply: (obj, thisArg, args) => {
+    result = await execCommand('call', {
+      id: obj['_id'],
+      call: obj['_method'],
+      args
+    });
+    return result;
+  }
+}
+
+const elementProxy = {
+  async get: (obj, prop) => {
+    result = await execCommand('get', {
+      id: obj['_id'],
+      attr: prop
+    });
+    return result === '__function__' 
+      ? new Proxy({_id: obj['_id'], _method: prop}, methodProxy)
+      : result;
+  }
+};
+
+const find = async (selector) => {
+  let result;
+  do {
+    result = await execCommand('find', selector);
+    if (!result || !result.length) await wait(200);
+  } while (!result && !result.length);
+
+  return result.map((r) => new Proxy({_id: r}, elementProxy));
+}
+
 module.exports.exec = exec;
 module.exports.exists = exists;
+module.exports.doesnotexist = doesnotexist;
 module.exports.wait = wait;
-// module.export.cmd = commands(exec);

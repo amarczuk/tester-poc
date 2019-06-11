@@ -41,13 +41,24 @@
             tid: data.tid,
             result: result }));
         } else if (data.type === 'find') {
-          result = document.querySelectorAll(data.payload);
-          const objectIds = result.map(function(res) {
+          nodes = document.querySelectorAll(data.payload);
+          result = nodes.map(function(res) {
             cacheCount++;
             const oid = new Date().valueOf() + '_' + cacheCount;
             objectCache[oid] = res;
             return oid;
           });
+        } else if (data.type === 'get') {
+          const conf = data.payload;
+          const node = objectCache[conf.id];
+          result = node[conf.attr];
+          if (typeof result === 'function') {
+            result = '__function__';
+          }
+        } else if (data.type === 'call') {
+          const conf = data.payload;
+          const node = objectCache[conf.id];
+          result = node[conf.call].apply(null, conf.args);
         }
         
         ws.send(JSON.stringify({

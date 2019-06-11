@@ -7,6 +7,8 @@
   (function() {
     const ws = new WebSocket('ws://' + window.location.host + '/client');
     let id = sessionStorage.testId;
+    const objectCache = {};
+    let cacheCount = 0;
 
     ws.onmessage = function(event) {
       const data = JSON.parse(event.data);
@@ -15,38 +17,58 @@
       if (data.type === 'id') {
         id = data.id;
         sessionStorage.testId = id;
+        return;
       }
-
-      if (data.type === 'code') {
-        ws.send(JSON.stringify({
-          type: 'started',
-          id: id,
-          code: data.code,
-          time: data.time,
-          tid: data.tid
-        }));
-
-        try {
-          const result = Function('"use strict";return ' + data.code + '')();
+      
+      ws.send(JSON.stringify({
+        type: 'started',
+        id: id,
+        payload: data.payload,
+        time: data.time,
+        tid: data.tid
+      }));
+      
+      let result = null;
+      
+      try {
+        if (data.type === 'code') {
+          result = Function('"use strict";return ' + data.payload + '')();
           ws.send(JSON.stringify({
             type: 'done',
             id: id,
-            code: data.code,
+            payload: data.payload,
             time: data.time,
             tid: data.tid,
             result: result }));
-        } catch (e) {
-          ws.send(JSON.stringify({
-            type: 'error',
-            id: id,
-            code: data.code,
-            time: data.time,
-            tid: data.tid,
-            result: e.message,
-            browser: window.navigator.userAgent
-          }));
+        } else if (data.type === 'find') {
+          result = document.querySelectorAll(data.payload);
+          const objectIds = result.map(function(res) {
+            cacheCount++;
+            const oid = new Date().valueOf() + '_' + cacheCount;
+            objectCache[oid] = res;
+            return oid;
+          });
         }
-      }
+        
+        ws.send(JSON.stringify({
+          type: 'done',
+          id: id,
+          payload: data.payload,
+          time: data.time,
+          tid: data.tid,
+          result: result
+        }));
+      } catch (e) {
+        ws.send(JSON.stringify({
+          type: 'error',
+          id: id,
+          payload: data.payload,
+          time: data.time,
+          tid: data.tid,
+          result: e.message,
+          browser: window.navigator.userAgent
+        }));
+      };
     };
 
     ws.onopen = function() {

@@ -7,7 +7,7 @@ class TestEmitter extends EventEmitter {}
 const testEmitter = new TestEmitter();
 
 const ws = new WebSocket('ws://localhost:8585/server');
-const eventName = data => `msg_${data.code}_${data.time}`;
+const eventName = data => `msg_${data.payload}_${data.time}`;
 
 const wait = async time => new Promise(resolve => setTimeout(resolve, time));
 const send = (ws, msg) => ws.send(JSON.stringify(msg));
@@ -64,17 +64,13 @@ module.exports.start = async () => {
   });
 };
 
-const exec = async (toExec, ...params) => {
-  const values = params ? params.map(p => JSON.stringify(p)) : [];
-  const code = typeof toExec === 'function'
-    ? '(' + toExec.toString() + `)(${values.join(', ')})`
-    : toExec;
+const execCommand = async (type, payload) => {
   const time = new Date().valueOf();
-  const name = eventName({ code, time });
+  const name = eventName({ payload, time });
   send(ws, {
-    type: 'code',
+    type,
     id: process.env['TEST_ID'],
-    code,
+    payload,
     time,
     tid
   });
@@ -88,13 +84,21 @@ const exec = async (toExec, ...params) => {
 
       if (data.type === 'error') {
         testEmitter.removeAllListeners(name);
-        reject(new Error(`Error: ${data.result} in ${data.code} browser: ${data.browser}`));
+        reject(new Error(`Error: ${data.result} in ${data.payload} browser: ${data.browser}`));
       }
     });
   });
 
   return result;
-}
+};
+
+const exec = async (toExec, ...params) => {
+  const values = params ? params.map(p => JSON.stringify(p)) : [];
+  const code = typeof toExec === 'function'
+    ? '(' + toExec.toString() + `)(${values.join(', ')})`
+    : toExec;
+  return execCommand('code', code);
+};
 
 const exists = async (selector) => {
   let result;
@@ -110,4 +114,5 @@ const exists = async (selector) => {
 
 module.exports.exec = exec;
 module.exports.exists = exists;
+module.exports.wait = wait;
 // module.export.cmd = commands(exec);

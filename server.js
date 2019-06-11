@@ -76,16 +76,17 @@ app.ws('/server', function(ws) {
     if (message.type === 'init') {
       conId = message.id;
       testId = message.tid;
-      route[message.id] = {
-        ...route[message.id],
+      if (!route[conId]) return;
+      route[conId] = {
+        ...route[conId],
         server: {
-          ...route[message.id].server,
+          ...route[conId].server,
           [testId]: ws
         }
       };
       send(ws, { type: 'ready' });
-    } else if (route[message.id] && route[message.id].client) {
-      safeSend(message.id, message);
+    } else if (route[conId] && route[conId].client) {
+      safeSend(conId, message);
     }
   });
 

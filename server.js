@@ -34,21 +34,37 @@ const initServer = (id) => {
 };
 
 const send = (ws, msg) => ws.send(JSON.stringify(msg));
+const safeSend = (id, msg) => {
+  const ws = route[id] ? route[id].client : null;
+  if (!ws) {
+    return setTimeout(() => safeSend(id, msg), 200);
+  }
+  try {
+    send(ws, msg);
+  } catch(e) {
+    setTimeout(() => safeSend(id, msg), 200);
+  }
+};
 
 app.ws('/client', function(ws, req) {
+  let conId;
   ws.on('message', function(msg) {
     console.log(msg);
     const message = JSON.parse(msg);
     if (message.type === 'init') {
-      if (!message.id) message.id = uuidv1();
-      route[message.id] = { ...route[message.id], client: ws };
-      send(ws, { type: 'id', id: message.id });
-      if (!route[message.id].server) {
-        initServer(message.id);
+      conId = message.id || uuidv1();
+      route[conId] = { ...route[conId], client: ws };
+      send(ws, { type: 'id', id: conId });
+      if (!route[conId].server) {
+        initServer(conId);
       }
-    } else if (route[message.id] && route[message.id].server) {
-      send(route[message.id].server[message.tid], message);
+    } else if (route[conId] && route[conId].server) {
+      send(route[conId].server[message.tid], message);
     }
+  });
+
+  ws.on('close', () => {
+    route[conId].client = null;
   });
 });
 
@@ -69,7 +85,7 @@ app.ws('/server', function(ws) {
       };
       send(ws, { type: 'ready' });
     } else if (route[message.id] && route[message.id].client) {
-      send(route[message.id].client, message);
+      safeSend(message.id, message);
     }
   });
 

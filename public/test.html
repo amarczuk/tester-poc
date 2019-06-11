@@ -1,7 +1,7 @@
 <html>
+<body>
 
 <div id="test1">abc</div>
-<div id="test2">abc 2</div>
 
 <script>
   (function() {
@@ -25,7 +25,7 @@
           time: data.time,
           tid: data.tid
         }));
-        
+
         try {
           const result = Function('"use strict";return ' + data.code + '')();
           ws.send(JSON.stringify({
@@ -52,7 +52,14 @@
     ws.onopen = function() {
       ws.send(JSON.stringify({type: 'init', id: id}));
     };
+
   })();
+
+  showtest2 = () => setTimeout(function() {
+    document.querySelector('body').insertAdjacentHTML('beforeend', '<div id="test2">abc 2</div>');
+  }, 2000);
 </script>
+<button onclick="showtest2()" id="clickme">show</button>
+</body>
 
 </html>

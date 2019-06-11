@@ -11,12 +11,13 @@ describe('test v2', () => {
     done();
   });
 
-  test('test 3', async () => {
-    const res = await tester.exec(() => document.querySelectorAll("#test2").length)
-    expect(res).toEqual(1);
-  })
+  // test('test 3', async () => {
+  //   const res = await tester.exec(() => document.querySelectorAll("#test2").length)
+  //   expect(res).toEqual(1);
+  // })
 
   test('test 4', async () => {
+    await tester.exec(() => document.querySelector('#clickme').click());
     const res = await tester.exists("#test2");
     expect(res).toEqual(true);
   })

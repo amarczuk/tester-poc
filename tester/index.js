@@ -9,6 +9,7 @@ const testEmitter = new TestEmitter();
 const ws = new WebSocket('ws://localhost:8585/server');
 const eventName = data => `msg_${data.code}_${data.time}`;
 
+const wait = async time => new Promise(resolve => setTimeout(resolve, time));
 const send = (ws, msg) => ws.send(JSON.stringify(msg));
 
 let connected = false;
@@ -63,7 +64,7 @@ module.exports.start = async () => {
   });
 };
 
-const exec = async (toExec, params = null) => {
+const exec = async (toExec, ...params) => {
   const values = params ? params.map(p => JSON.stringify(p)) : [];
   const code = typeof toExec === 'function'
     ? '(' + toExec.toString() + `)(${values.join(', ')})`
@@ -100,7 +101,8 @@ const exists = async (selector) => {
   do {
     result = await exec(function(selector) {
       return document.querySelectorAll(selector).length > 0;
-    }, [selector]);
+    }, selector);
+    if (!result) await wait(200);
   } while (!result);
 
   return true;

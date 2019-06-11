@@ -125,7 +125,7 @@ const doesnotexist = async (selector) => {
 }
 
 const methodProxy = {
-  async apply: (obj, thisArg, args) => {
+  async apply(obj, thisArg, args) {
     result = await execCommand('call', {
       id: obj['_id'],
       call: obj['_method'],
@@ -136,7 +136,7 @@ const methodProxy = {
 }
 
 const elementProxy = {
-  async get: (obj, prop) => {
+  async get(obj, prop) {
     result = await execCommand('get', {
       id: obj['_id'],
       attr: prop

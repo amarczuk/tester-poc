@@ -63,9 +63,6 @@
           const conf = data.payload;
           const node = objectCache[conf.id].node;
           result = node[conf.attr];
-          if (typeof result === 'function') {
-            result = '__function__';
-          }
         } else if (data.type === 'call') {
           const conf = data.payload;
           const node = objectCache[conf.id].node;

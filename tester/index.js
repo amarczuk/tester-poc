@@ -124,15 +124,15 @@ const doesnotexist = async (selector) => {
   return true;
 }
 
-const methodProxy = {
-  async apply(obj, thisArg, args) {
+const methodProxy = (id, method) => {
+  return async (...args) => {
     result = await execCommand('call', {
-      id: obj['_id'],
-      call: obj['_method'],
+      id: id,
+      call: method,
       args
     });
     return result;
-  }
+  };
 }
 
 const elementProxy = {
@@ -141,8 +141,8 @@ const elementProxy = {
       id: obj['_id'],
       attr: prop
     });
-    return result === '__function__' 
-      ? new Proxy({_id: obj['_id'], _method: prop}, methodProxy)
+    return result === '__function__'
+      ? methodProxy(obj['_id'], prop)
       : result;
   }
 };
@@ -161,3 +161,4 @@ module.exports.exec = exec;
 module.exports.exists = exists;
 module.exports.doesnotexist = doesnotexist;
 module.exports.wait = wait;
+module.exports.find = find;

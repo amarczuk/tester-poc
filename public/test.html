@@ -19,7 +19,7 @@
         sessionStorage.testId = id;
         return;
       }
-      
+
       ws.send(JSON.stringify({
         type: 'started',
         id: id,
@@ -27,9 +27,9 @@
         time: data.time,
         tid: data.tid
       }));
-      
+
       let result = null;
-      
+
       try {
         if (data.type === 'code') {
           result = Function('"use strict";return ' + data.payload + '')();
@@ -42,11 +42,12 @@
             result: result }));
         } else if (data.type === 'find') {
           nodes = document.querySelectorAll(data.payload);
-          result = nodes.map(function(res) {
+          result = [];
+          nodes.forEach(function(res) {
             cacheCount++;
             const oid = new Date().valueOf() + '_' + cacheCount;
             objectCache[oid] = res;
-            return oid;
+            result.push(oid);
           });
         } else if (data.type === 'get') {
           const conf = data.payload;
@@ -60,7 +61,7 @@
           const node = objectCache[conf.id];
           result = node[conf.call].apply(null, conf.args);
         }
-        
+
         ws.send(JSON.stringify({
           type: 'done',
           id: id,

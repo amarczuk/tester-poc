@@ -7,7 +7,7 @@ describe('test v1', () => {
       await tester.start();
       done();
   });
-  
+
   afterAll(async (done) => {
     await tester.stop();
     done();
@@ -21,5 +21,17 @@ describe('test v1', () => {
   test('test 2', async () => {
     const res = await tester.exec('document.querySelectorAll("#test1").length')
     expect(res).toEqual(1);
+  })
+
+  test('test 2a', async () => {
+    const test1 = await tester.find('#test1');
+    const res = await test1[0].innerHTML;
+    expect(res).toEqual('abc');
+  })
+
+  test('test 2b', async () => {
+    const test1 = await tester.find('#test1');
+    const res = await test1[0].getAttribute('id');
+    expect(res).toEqual('test1');
   })
 })

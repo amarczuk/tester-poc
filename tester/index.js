@@ -126,7 +126,7 @@ const doesnotexist = async (selector) => {
 
 const methodProxy = (id, method) => {
   return async (...args) => {
-    result = await execCommand('call', {
+    const result = await execCommand('call', {
       id: id,
       call: method,
       args
@@ -136,14 +136,14 @@ const methodProxy = (id, method) => {
 }
 
 const elementProxy = {
-  async get(obj, prop) {
-    result = await execCommand('get', {
-      id: obj['_id'],
+  get(obj, prop) {
+    if (obj['_node'].methods.includes(prop)) {
+      return methodProxy(obj['_node'].id, prop);
+    }
+    return execCommand('get', {
+      id: obj['_node'].id,
       attr: prop
     });
-    return result === '__function__'
-      ? methodProxy(obj['_id'], prop)
-      : result;
   }
 };
 
@@ -154,7 +154,7 @@ const find = async (selector) => {
     if (!result || !result.length) await wait(200);
   } while (!result && !result.length);
 
-  return result.map((r) => new Proxy({_id: r}, elementProxy));
+  return result.map(node => new Proxy({ _node: node }, elementProxy));
 }
 
 module.exports.exec = exec;

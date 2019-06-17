@@ -14,12 +14,12 @@ describe('test v1', () => {
   });
 
   test('test 1', async () => {
-    const res = await tester.exec('document.querySelector("#test1").innerHTML')
+    const res = await tester.exec('document.querySelector("#test1").innerHTML');
     expect(res).toBe('abc');
   });
 
   test('test 2', async () => {
-    const res = await tester.exec('document.querySelectorAll("#test1").length')
+    const res = await tester.exec('document.querySelectorAll("#test1").length');
     expect(res).toEqual(1);
   })
 

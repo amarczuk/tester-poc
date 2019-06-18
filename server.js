@@ -34,15 +34,20 @@ const initServer = (id) => {
 };
 
 const send = (ws, msg) => ws.send(JSON.stringify(msg));
-const safeSend = (id, msg) => {
+const safeSend = (id, tid, msg) => {
   const ws = route[id] ? route[id].client : null;
-  if (!ws) {
-    return setTimeout(() => safeSend(id, msg), 200);
+  const sws = route[id] ? route[id].server[tid] : null;
+  if (!ws || !sws) {
+    return setTimeout(() => safeSend(id, tid, msg), 200);
   }
   try {
     send(ws, msg);
+    send(sws, {
+      ...msg,
+      type: 'sent'
+    });
   } catch(e) {
-    setTimeout(() => safeSend(id, msg), 200);
+    setTimeout(() => safeSend(id, tid, msg), 200);
   }
 };
 
@@ -86,7 +91,7 @@ app.ws('/server', function(ws) {
       };
       send(ws, { type: 'ready' });
     } else if (route[conId] && route[conId].client) {
-      safeSend(conId, message);
+      safeSend(conId, testId, message);
     }
   });
 

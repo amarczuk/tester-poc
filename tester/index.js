@@ -157,9 +157,7 @@ const find = async (selector) => {
   return result.map(node => new Proxy({ _node: node }, elementProxy));
 }
 
-const loadPage = async path => exec(function(path) {
-      return document.location.href = path;
-    }, path);
+const loadPage = async path => execCommand('goto', path);
 
 module.exports.exec = exec;
 module.exports.exists = exists;

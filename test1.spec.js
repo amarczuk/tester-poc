@@ -11,22 +11,46 @@ describe('test v2', () => {
     done();
   });
 
-  test('reload', async () => {
+  test('load the first page', async () => {
+    await tester.loadPage('/test.html');
+    const h1 = await tester.find('h1');
+    const res = await h1[0].innerHTML;
+    expect(res).toEqual(' test');
+  });
+
+  test('reload page', async () => {
     const reloadbutton = await tester.find('#reload');
     await reloadbutton[0].click();
-    console.error('clicked');
     const res = await tester.exists("#test1");
     expect(res).toEqual(true);
   });
 
-  test('test 3', async () => {
+  test('excute command', async () => {
     const res = await tester.exec(() => document.querySelectorAll("#test2").length)
     expect(res).toEqual(0);
   });
 
-  test('test 4', async () => {
+  test('wait for element to appear', async () => {
     await tester.exec(() => document.querySelector('#clickme').click());
     const res = await tester.exists("#test2");
     expect(res).toEqual(true);
+  });
+  
+  test('load another page', async () => {
+    await tester.loadPage('/test2.html');
+    const res = await tester.exists("#test1");
+    expect(res).toEqual(true);
+  });
+  
+  test('click element on the new page', async () => {
+    await tester.exec(() => document.querySelector('#clickme').click());
+    const res = await tester.exists("#test2");
+    expect(res).toEqual(true);
+  });
+  
+  test('find element on the new page', async () => {
+    const h1 = await tester.find('h1');
+    const res = await h1[0].innerHTML;
+    expect(res).toEqual('test 1');
   });
 });

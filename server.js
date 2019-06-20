@@ -54,7 +54,7 @@ const safeSend = (id, tid, msg) => {
 app.ws('/client', function(ws, req) {
   let conId;
   ws.on('message', function(msg) {
-    console.log(msg);
+    console.log(`--> ${msg}`);
     const message = JSON.parse(msg);
     if (message.type === 'init') {
       conId = message.id || uuidv1();
@@ -77,6 +77,7 @@ app.ws('/server', function(ws) {
   let conId;
   let testId;
   ws.on('message', function(msg) {
+    console.log(`<-- ${msg}`);
     const message = JSON.parse(msg);
     if (message.type === 'init') {
       conId = message.id;
@@ -90,7 +91,7 @@ app.ws('/server', function(ws) {
         }
       };
       send(ws, { type: 'ready' });
-    } else if (route[conId] && route[conId].client) {
+    } else if (route[conId]) {
       safeSend(conId, testId, message);
     }
   });

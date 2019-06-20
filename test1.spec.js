@@ -13,8 +13,8 @@ describe('test v2', () => {
 
   test('reload', async () => {
     const reloadbutton = await tester.find('#reload');
-    reloadbutton[0].click();
-    await tester.wait(500); // grrrr
+    await reloadbutton[0].click();
+    console.error('clicked');
     const res = await tester.exists("#test1");
     expect(res).toEqual(true);
   });

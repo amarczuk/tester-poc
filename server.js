@@ -33,19 +33,18 @@ const initServer = (id) => {
   });
 };
 
+const wait = async time => new Promise(resolve => setTimeout(resolve, time));
 const send = (ws, msg) => ws.send(JSON.stringify(msg));
-const safeSend = (id, tid, msg) => {
+
+const safeSend = async (id, tid, msg) => {
   const ws = route[id] ? route[id].client : null;
   const sws = route[id] ? route[id].server[tid] : null;
   if (!ws || !sws) {
     return setTimeout(() => safeSend(id, tid, msg), 200);
   }
   try {
+    await wait(50);
     send(ws, msg);
-    send(sws, {
-      ...msg,
-      type: 'sent'
-    });
   } catch(e) {
     setTimeout(() => safeSend(id, tid, msg), 200);
   }

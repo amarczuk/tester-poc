@@ -4,6 +4,40 @@
     console.log = function() {};
   }
   
+  const sendConsole = function(type, args) {
+    try {
+      ws.send(JSON.stringify({
+        type: 'console.' + type,
+        id: id,
+        payload: Array.prototype.slice.call(args)
+      }));
+    } catch(e) {
+      // ignore
+    }
+  }
+  
+  const oldConsole = console;
+  // console.log = function() {
+  //   oldConsole.log.apply(this, arguments);
+  //   sendConsole('log', arguments);
+  // };
+  // console.error = function() {
+  //   oldConsole.error.apply(this, arguments);
+  //   sendConsole('error', arguments);
+  // };
+  // console.info = function() {
+  //   oldConsole.info.apply(this, arguments);
+  //   sendConsole('info', arguments);
+  // };
+  // console.debug = function() {
+  //   oldConsole.debug.apply(this, arguments);
+  //   sendConsole('debug', arguments);
+  // };
+  // console.warn = function() {
+  //   oldConsole.warn.apply(this, arguments);
+  //   sendConsole('warn', arguments);
+  // };
+  
   const ws = new WebSocket('ws://' + window.location.host + '/client');
   let id = sessionStorage.testId;
   const objectCache = {};
@@ -11,7 +45,7 @@
 
   ws.onmessage = function(event) {
     const data = JSON.parse(event.data);
-    console.log(data);
+    oldConsole.log(data);
 
     if (data.type === 'id') {
       id = data.id;
@@ -91,7 +125,7 @@
         result: e.message,
         browser: window.navigator.userAgent
       }));
-      console.error(e);
+      oldConsole.error(e);
     };
   };
 

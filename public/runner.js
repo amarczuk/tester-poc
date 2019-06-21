@@ -1,4 +1,9 @@
 (function() {
+  if (!console || !console.log) {
+    console = console || {};
+    console.log = function() {};
+  }
+  
   const ws = new WebSocket('ws://' + window.location.host + '/client');
   let id = sessionStorage.testId;
   const objectCache = {};
@@ -37,7 +42,8 @@
       } else if (data.type === 'find') {
         nodes = document.querySelectorAll(data.payload);
         result = [];
-        nodes.forEach(function(res) {
+        for (let node in nodes) {
+          const res = nodes[node];
           cacheCount++;
           const oid = new Date().valueOf() + '_' + cacheCount;
           const nodeMethods = [];
@@ -52,7 +58,7 @@
             methods: nodeMethods
           };
           result.push({ id: oid, methods: nodeMethods });
-        });
+        };
       } else if (data.type === 'get') {
         const conf = data.payload;
         const node = objectCache[conf.id].node;

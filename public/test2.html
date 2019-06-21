@@ -4,9 +4,11 @@
 <div id="test1">abc</div>
 
 <script>
-showtest2 = () => setTimeout(function() {
-  document.querySelector('body').insertAdjacentHTML('beforeend', '<div id="test2">abc 2</div>');
-}, 2000);
+showtest2 = function() {
+  setTimeout(function() {
+    document.querySelector('body').insertAdjacentHTML('beforeend', '<div id="test2">abc 2</div>');
+  }, 2000);
+};
 </script>
 <button onclick="showtest2()" id="clickme">show</button>
 <a href="/test.html" id="reload">reload</a>

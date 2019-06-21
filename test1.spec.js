@@ -26,28 +26,28 @@ describe('test v2', () => {
   });
 
   test('excute command', async () => {
-    const res = await tester.exec(() => document.querySelectorAll("#test2").length)
+    const res = await tester.exec(function() { return document.querySelectorAll("#test2").length; });
     expect(res).toEqual(0);
   });
 
   test('wait for element to appear', async () => {
-    await tester.exec(() => document.querySelector('#clickme').click());
+    await tester.exec(function() { return document.querySelector('#clickme').click(); });
     const res = await tester.exists("#test2");
     expect(res).toEqual(true);
   });
-  
+
   test('load another page', async () => {
     await tester.loadPage('/test2.html');
     const res = await tester.exists("#test1");
     expect(res).toEqual(true);
   });
-  
+
   test('click element on the new page', async () => {
-    await tester.exec(() => document.querySelector('#clickme').click());
+    await tester.exec(function() { return document.querySelector('#clickme').click(); });
     const res = await tester.exists("#test2");
     expect(res).toEqual(true);
   });
-  
+
   test('find element on the new page', async () => {
     const h1 = await tester.find('h1');
     const res = await h1[0].innerHTML;

@@ -3,41 +3,46 @@
     console = console || {};
     console.log = function() {};
   }
-  
+
   const sendConsole = function(type, args) {
     try {
       ws.send(JSON.stringify({
-        type: 'console.' + type,
+        type: 'console',
         id: id,
-        payload: Array.prototype.slice.call(args)
+        payload: {
+          method: type,
+          args: Array.prototype.slice.call(args)
+        }
       }));
     } catch(e) {
       // ignore
     }
   }
-  
+
   const oldConsole = console;
-  // console.log = function() {
-  //   oldConsole.log.apply(this, arguments);
-  //   sendConsole('log', arguments);
-  // };
-  // console.error = function() {
-  //   oldConsole.error.apply(this, arguments);
-  //   sendConsole('error', arguments);
-  // };
-  // console.info = function() {
-  //   oldConsole.info.apply(this, arguments);
-  //   sendConsole('info', arguments);
-  // };
-  // console.debug = function() {
-  //   oldConsole.debug.apply(this, arguments);
-  //   sendConsole('debug', arguments);
-  // };
-  // console.warn = function() {
-  //   oldConsole.warn.apply(this, arguments);
-  //   sendConsole('warn', arguments);
-  // };
-  
+  console = {
+    log: function() {
+      oldConsole.log.apply(this, arguments);
+      sendConsole('log', arguments);
+    },
+    error: function() {
+      oldConsole.error.apply(this, arguments);
+      sendConsole('error', arguments);
+    },
+    info: function() {
+      oldConsole.info.apply(this, arguments);
+      sendConsole('info', arguments);
+    },
+    debug: function() {
+      oldConsole.debug.apply(this, arguments);
+      sendConsole('debug', arguments);
+    },
+    warn: function() {
+      oldConsole.warn.apply(this, arguments);
+      sendConsole('warn', arguments);
+    }
+  };
+
   const ws = new WebSocket('ws://' + window.location.host + '/client');
   let id = sessionStorage.testId;
   const objectCache = {};

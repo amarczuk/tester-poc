@@ -15,7 +15,14 @@ app.get('/', function(req, res, next){
 const route = {};
 
 const initServer = (id) => {
-  const ls = spawn('npm', ['run', 'test'], { env: { ...process.env, TEST_ID: id }, shell: true });
+  const ls = spawn(
+    'npm',
+    ['run', 'test'],
+    {
+      env: { ...process.env, TEST_ID: id, FORCE_COLOR: true },
+      shell: true
+    }
+  );
 
   ls.stdout.on('data', (data) => {
    process.stdout.write(data);
@@ -63,7 +70,13 @@ app.ws('/client', function(ws, req) {
         initServer(conId);
       }
     } else if (route[conId] && route[conId].server) {
-      send(route[conId].server[message.tid], message);
+      let wss = '';
+      if (message.type === 'console') {
+        wss = route[conId].server[Object.keys(route[conId].server)[0]];
+      } else {
+        wss = route[conId].server[message.tid];
+      };
+      send(wss, message);
     }
   });
 

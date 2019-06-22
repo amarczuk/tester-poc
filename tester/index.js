@@ -59,6 +59,9 @@ module.exports.start = async () => {
         resolve(true);
         return;
       }
+      if (msg.type === 'console') {
+        console[msg.payload.method].apply(this, msg.payload.args);
+      }
       testEmitter.emit(eventName(msg), msg);
     });
   });
